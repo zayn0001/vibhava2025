@@ -67,6 +67,7 @@ export default function DashboardPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials:"include",
         body: JSON.stringify({
           points: Number(editedPoints),
         }),
