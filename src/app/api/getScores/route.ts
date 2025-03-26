@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const secret = process.env.NEXTAUTH_SECRET;
 
     const token = await getToken({ req, secret });
+    console.log(token)
     if (!token?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
