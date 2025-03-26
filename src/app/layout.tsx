@@ -64,13 +64,13 @@ function Navbar() {
 // RootLayout Component
 export default function RootLayout({
   children}: Readonly<{
-    
+
   children: React.ReactNode;
 }>) {
   return (
     <SessionProvider>
       <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-        <body className="bg-gray-100">
+        <body className="bg-gray-100 overflow-y-hidden">
           {/* Navbar on all pages */}
           <Navbar />
           <main className="container mx-auto p-4">{children}</main>
