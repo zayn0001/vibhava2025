@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     // Get token from request to get user ID
     const token = await getToken({ req });
+    console.log(token)
     if (!token?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
