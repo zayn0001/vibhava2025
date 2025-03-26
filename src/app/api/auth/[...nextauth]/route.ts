@@ -1,8 +1,9 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { supabaseAdmin } from "@/lib/supabase";
 
-const handler = NextAuth({
+
+export const authOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -18,59 +19,27 @@ const handler = NextAuth({
           .eq("email", profile.email)
           .single();
 
-        // Add user details to the token
         token.id = user?.id;
         token.email = user?.email;
-        token.name = user?.name;
-        token.role = user?.role || "user"; // Fallback to 'user'
+        token.role = user?.role || "user"; // Assign role or default to 'user'
       }
       return token;
     },
 
     async session({ session, token }) {
-      if (session.user) {
-        // Assign values from token to session
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
-      }
+      session.user.id = token.id as string;
+      session.user.role = token.role as string;
+      session.user.email = token.email as string;
       return session;
     },
-
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        const { email, name } = user;
-
-        const { data: existingUser} = await supabaseAdmin
-          .from("vibhava_users")
-          .select("*")
-          .eq("email", email)
-          .single();
-
-        if (!existingUser) {
-
-          const { error: insertError } = await supabaseAdmin
-            .from("vibhava_users")
-            .insert({
-              email,
-              name
-            });
-
-          if (insertError) {
-            console.error("Error inserting into vibhava_users:", insertError.message);
-            return false;
-          }
-        }
-      }
-      return true;
-    },
   },
-
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-});
+};
+
+const handler = NextAuth(authOptions as AuthOptions);
+
 
 export { handler as GET, handler as POST };
