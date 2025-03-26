@@ -5,7 +5,7 @@ import { supabaseAdmin } from "@/lib/supabase"; // Import your Supabase instance
 // PUT /api/updateScore/{user_id}/{game_name}
 export async function PUT(
   req: NextRequest,
-  context: { params: { user_id: string; game_name: string } }
+  context: { params: Promise<{ user_id: string; game_name: string }> }
 ) {
   try {
     // Get points from the request body
