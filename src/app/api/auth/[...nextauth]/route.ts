@@ -11,38 +11,33 @@ const handler = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
-      if (account?.provider === "google") {
-        
-        token.email = profile?.email;
-        if (token.email) {
-          const { data: user } = await supabaseAdmin
-            .from("vibhava_users")
-            .select("*")
-            .eq("email", token.email)
-            .single();
-  
-          token.role = user?.role
-          token.id = user?.id
-          token.name  = user?.name
-        }
-        
+      if (account?.provider === "google" && profile?.email) {
+        const { data: user } = await supabaseAdmin
+          .from("vibhava_users")
+          .select("*")
+          .eq("email", profile.email)
+          .single();
+
+        // Add user details to the token
+        token.id = user?.id;
+        token.email = user?.email;
+        token.name = user?.name;
+        token.role = user?.role || "user"; // Fallback to 'user'
       }
       return token;
     },
+
     async session({ session, token }) {
       if (session.user) {
+        // Assign values from token to session
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.name = token.name as string;
         session.user.email = token.email as string;
-        const { data: existingUser, error: _ } = await supabaseAdmin
-          .from("vibhava_users")
-          .select("*")
-          .eq("email", session.user.email)
-          .single();
-        session.user.role = existingUser.role
-        session.user.id = existingUser.id
-        session.user.name = existingUser.name
       }
       return session;
     },
+
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         const { email, name } = user;
@@ -71,6 +66,7 @@ const handler = NextAuth({
       return true;
     },
   },
+
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",

@@ -9,7 +9,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchScores = async () => {
       try {
-        const res = await fetch("/api/getScores", {credentials:"include"});
+        const res = await fetch(`/api/getScores?user_id=${session?.user?.id}`);
         const data = await res.json();
         if (res.ok) {
           setScores(data.scores);
