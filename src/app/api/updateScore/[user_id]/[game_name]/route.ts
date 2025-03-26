@@ -24,7 +24,7 @@ export async function PUT(
     const { points } = await req.json();
 
     // Validate that points are provided
-    if (!points) {
+    if (points == null) {
       return NextResponse.json(
         { error: "Missing points value" },
         { status: 400 }
