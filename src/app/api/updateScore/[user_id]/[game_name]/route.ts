@@ -10,7 +10,7 @@ export async function PUT(
 ) {
   try {
     const secret = process.env.NEXTAUTH_SECRET;
-    const token = await getToken({ req, secret:secret });
+    const token = await getToken({ req, secret:secret,secureCookie:true });
     console.log(token)
     const { data: user } = await supabaseAdmin
     .from("vibhava_users")
