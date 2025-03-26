@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase"; // Import your Supabase instance
 
+
+interface RouteContext {
+  params: {
+    user_id: string;
+    game_name: string;
+  };
+}
+
+
 // PUT /api/updateScore/{user_id}/{game_name}
 export async function PUT(
   req: NextRequest,
-  params: { user_id: string; game_name: string }
+  context: RouteContext
 ) {
   try {
     // Get points from the request body
@@ -19,7 +28,7 @@ export async function PUT(
     }
 
     // Extract path params
-    const { user_id, game_name } = await params;
+    const { user_id, game_name } = await context.params;
 
     // Update points for the given user and game in Supabase
     const { error } = await supabaseAdmin
