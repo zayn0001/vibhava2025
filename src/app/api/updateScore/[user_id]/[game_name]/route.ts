@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase"; // Import your Supabase instance
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
-import { getServerSession } from "next-auth/next";
-import { AuthOptions } from "next-auth";
+import { getToken } from "next-auth/jwt";
 
 
 // PUT /api/updateScore/{user_id}/{game_name}
@@ -12,15 +9,12 @@ export async function PUT(
   context: { params: Promise<{ user_id: string; game_name: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions as AuthOptions);
-
-  if (session.user.role != "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+    const secret = process.env.NEXTAUTH_SECRET;
+    const token = await getToken({ req, secret:secret });
     const { data: user } = await supabaseAdmin
     .from("vibhava_users")
     .select("*")
-    .eq("email", session.user.email)
+    .eq("email", token?.email)
     .single();
     if (user.role != "admin"){
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

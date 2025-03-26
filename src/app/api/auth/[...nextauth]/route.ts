@@ -1,9 +1,8 @@
-import NextAuth, { AuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { supabaseAdmin } from "@/lib/supabase";
 
-
-export const authOptions = {
+const handler = NextAuth({
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -15,21 +14,36 @@ export const authOptions = {
       if (account?.provider === "google" && profile?.email) {
         const { data: user } = await supabaseAdmin
           .from("vibhava_users")
-          .select("*")
+          .select("id, role, name")
           .eq("email", profile.email)
           .single();
 
-        token.id = user?.id;
-        token.email = user?.email;
-        token.role = user?.role || "user"; // Assign role or default to 'user'
+        if (user) {
+          token.id = user.id;
+          token.role = user.role;
+          token.name = user.name;
+        } else {
+          // Insert new user if not exists
+          const { error } = await supabaseAdmin
+            .from("vibhava_users")
+            .insert({ email: profile.email, name: profile.name });
+
+          if (error) {
+            console.error("Error inserting new user:", error.message);
+          }
+        }
+
+        token.email = profile.email;
       }
       return token;
     },
-
     async session({ session, token }) {
-      session.user.id = token.id as string;
-      session.user.role = token.role as string;
-      session.user.email = token.email as string;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.name = token.name as string;
+        session.user.email = token.email as string;
+      }
       return session;
     },
   },
@@ -37,9 +51,6 @@ export const authOptions = {
     signIn: "/auth/signin",
     error: "/auth/error",
   },
-};
-
-const handler = NextAuth(authOptions as AuthOptions);
-
+});
 
 export { handler as GET, handler as POST };
